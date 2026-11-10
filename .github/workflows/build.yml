@@ -1,0 +1,82 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Testes
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Dependências
+        run: python -m pip install -r requirements.txt
+
+      - name: Pytest
+        run: python -m pytest
+
+  package:
+    name: Executável Windows
+    needs: test
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'push' &&
+        (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
+    runs-on: windows-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Empacotar
+        shell: pwsh
+        run: ./build.ps1
+
+      - name: Zip da pasta onedir
+        shell: pwsh
+        run: Compress-Archive -Path dist\VibeDJStems -DestinationPath VibeDJStems-windows.zip
+
+      - name: Artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: VibeDJStems-windows
+          path: VibeDJStems-windows.zip
+          if-no-files-found: error
+
+      - name: Release da tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create $env:GITHUB_REF_NAME VibeDJStems-windows.zip --title $env:GITHUB_REF_NAME --generate-notes
+          if ($LASTEXITCODE -ne 0) {
+            gh release upload $env:GITHUB_REF_NAME VibeDJStems-windows.zip --clobber
+          }
