@@ -30,7 +30,7 @@ Na primeira abertura os dois modelos (cerca de 500 MB) baixam para `%LOCALAPPDAT
 .\build.ps1
 ```
 
-O resultado é `dist\VibeDJStems\VibeDJStems.exe`. A pasta inteira `dist\VibeDJStems` precisa ir junto, porque o empacotamento é `--onedir`.
+O resultado é um único `dist\VibeDJStems.exe`. As bibliotecas vão dentro dele; não há pasta de DLLs para copiar junto.
 
 ## Testes
 

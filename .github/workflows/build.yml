@@ -59,15 +59,11 @@ jobs:
         shell: pwsh
         run: ./build.ps1
 
-      - name: Zip da pasta onedir
-        shell: pwsh
-        run: Compress-Archive -Path dist\VibeDJStems -DestinationPath VibeDJStems-windows.zip
-
       - name: Artefato
         uses: actions/upload-artifact@v4
         with:
           name: VibeDJStems-windows
-          path: VibeDJStems-windows.zip
+          path: dist/VibeDJStems.exe
           if-no-files-found: error
 
       - name: Release da tag
@@ -76,7 +72,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create $env:GITHUB_REF_NAME VibeDJStems-windows.zip --title $env:GITHUB_REF_NAME --generate-notes
+          gh release create $env:GITHUB_REF_NAME dist/VibeDJStems.exe --title $env:GITHUB_REF_NAME --generate-notes
           if ($LASTEXITCODE -ne 0) {
-            gh release upload $env:GITHUB_REF_NAME VibeDJStems-windows.zip --clobber
+            gh release upload $env:GITHUB_REF_NAME dist/VibeDJStems.exe --clobber
           }

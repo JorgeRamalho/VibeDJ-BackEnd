@@ -1,4 +1,5 @@
-# Gera dist\VibeDJStems\VibeDJStems.exe. Os modelos ficam em %LOCALAPPDATA%\VibeDJStems.
+# Gera dist\VibeDJStems.exe, um arquivo só. O bootloader abre as bibliotecas
+# de dentro do executável. Os modelos ficam em %LOCALAPPDATA%\VibeDJStems.
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 
@@ -16,7 +17,7 @@ if (-not (Test-Path .venv)) {
 
 & .\.venv\Scripts\pyinstaller.exe `
     --noconfirm `
-    --onedir `
+    --onefile `
     --noconsole `
     --name VibeDJStems `
     --paths src `
@@ -33,4 +34,4 @@ if (-not (Test-Path .venv)) {
     --hidden-import soxr `
     src\vibedj_stems\__main__.py
 
-Write-Host "Pronto: dist\VibeDJStems\VibeDJStems.exe"
+Write-Host "Pronto: dist\VibeDJStems.exe"
